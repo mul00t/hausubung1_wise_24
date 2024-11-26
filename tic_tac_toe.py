@@ -24,30 +24,23 @@ class TicTacToe:
         tk.Label(self.menu_frame, text="Spieler 1:").grid(row=0, column=0)
         self.player1_entry = tk.Entry(self.menu_frame)
         self.player1_entry.grid(row=0, column=1)
-        tk.Button(self.menu_frame, text="Zufällig", command=lambda: self.generate_name(self.player1_entry)).grid(row=0, column=2)
 
         tk.Label(self.menu_frame, text="Spieler 2:").grid(row=1, column=0)
         self.player2_entry = tk.Entry(self.menu_frame)
         self.player2_entry.grid(row=1, column=1)
-        tk.Button(self.menu_frame, text="Zufällig", command=lambda: self.generate_name(self.player2_entry)).grid(row=1, column=2)
 
         tk.Label(self.menu_frame, text="Spielfeldgröße (ungerade Zahl):").grid(row=2, column=0)
         self.size_var = tk.IntVar(value=3)
         tk.Spinbox(self.menu_frame, from_=3, to=15, increment=2, textvariable=self.size_var).grid(row=2, column=1)
 
         self.start_button = tk.Button(self.menu_frame, text="Neues Spiel starten", command=self.start_game)
-        self.start_button.grid(row=3, columnspan=3, pady=10)
+        self.start_button.grid(row=3, columnspan=2, pady=10)
 
         self.records_button = tk.Button(self.controls_frame, text="Rekordliste anzeigen", command=self.show_records)
         self.records_button.pack()
 
         self.current_player_label = tk.Label(self.controls_frame, text="")
         self.current_player_label.pack()
-
-    def generate_name(self, entry):
-        names = ["SpielerX", "Gamer123", "TickMaster", "TacPro", "ToeKing"]
-        entry.delete(0, tk.END)
-        entry.insert(0, random.choice(names))
 
     def start_game(self):
         self.players = [self.player1_entry.get() or "Spieler 1", self.player2_entry.get() or "Spieler 2"]
