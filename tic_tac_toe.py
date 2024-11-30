@@ -8,13 +8,12 @@ import re
 import logging
 from datetime import datetime
 
-# Logging-Konfiguration für Fehlerprotokolle
+# Logging-Config für Fehlerprotokolle
 logging.basicConfig(filename="game_log.txt", level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-# Eigene Exception für ungültige Benutzernamen
+# Exception für ungültige Benutzernamen
 class InvalidUsernameError(Exception):
-    """Wird ausgelöst, wenn der Benutzername ungültig ist."""
     pass
 
 
@@ -28,8 +27,7 @@ class TicTacToe:
     def __init__(self, root):
         """
         Initialisiert das Spiel.
-
-        :param root: Das Hauptfenster für die Tkinter-Oberfläche
+        :param root: Das Hauptfenster für Tkinter-Oberfläche
         """
         self.root = root
         self.root.title("Tic-Tac-Toe")  # Titel des Fensters
@@ -57,7 +55,7 @@ class TicTacToe:
 
     def init_ui(self):
         """
-        Erstellt die Benutzeroberfläche mit Tkinter Widgets.
+        Erstellt die Benutzeroberfläche mit Tkinter-Widgets.
         """
         self.menu_frame = tk.Frame(self.root)
         self.menu_frame.pack(pady=10)
@@ -96,7 +94,7 @@ class TicTacToe:
 
     def start_game(self):
         """
-        Startet ein neues Spiel mit den angegebenen Spielern und Spielfeldgröße.
+        Startet neues Spiel mit den angegebenen Spielern gewählter Spielfeldgröße.
         Überprüft, ob die Benutzernamen gültig sind.
         """
         player1_name = self.player1_entry.get()
@@ -114,7 +112,7 @@ class TicTacToe:
             return
         
         # Spieler und Spielfeldgröße festlegen
-        self.players = [player1_name or "Spieler 1", player2_name or "Spieler 2"]
+        self.players = [player1_name or "Spieler1", player2_name or "Spieler2"]
         self.size = self.size_var.get()
         self.current_player_index = 0
         self.current_player_label.config(text=f"Am Zug: {self.players[self.current_player_index]}")
@@ -173,7 +171,7 @@ class TicTacToe:
 
     def check_winner(self, row, col, mark):
         """
-        Überprüft, ob der Spieler gewonnen hat.
+        Überprüft, ob Spieler gewonnen hat.
         """
         # Reihen, Spalten und Diagonalen prüfen
         if all(self.board[row][c].cget("text") == mark for c in range(self.size)):
@@ -203,7 +201,7 @@ class TicTacToe:
 
     def start_timer(self):
         """
-        Startet den Timer, um die Spielzeit zu messen.
+        Startet den Timer
         """
         self.timer_running = True
         self.timer_thread = threading.Thread(target=self.update_timer, daemon=True)
@@ -247,7 +245,7 @@ class TicTacToe:
                     writer.writerow([player, time_elapsed])
         except IOError as e:
             self.log_error(f"Fehler beim Speichern des Rekords: {e}")
-            messagebox.showerror("Fehler", f"Fehler beim Speichern des Rekords: {e}")
+            messagebox.showerror(f"Fehler","Fehler beim Speichern des Rekords: {e}")
 
     def log_error(self, error_message):
         """
