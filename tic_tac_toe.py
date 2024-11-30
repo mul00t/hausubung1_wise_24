@@ -6,7 +6,8 @@ import csv
 import os
 import re
 import logging
-from datetime import datetime
+import random
+import string
 
 # Logging-Config für Fehlerprotokolle
 logging.basicConfig(filename="game_log.txt", level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,29 +19,19 @@ class InvalidUsernameError(Exception):
 
 
 class TicTacToe:
-    """
-    Die Klasse für das Tic-Tac-Toe-Spiel. Sie enthält:
-    - Spiellogik
-    - Benutzeroberfläche
-    - Verwaltung von Spielern und Spielständen
-    """
     def __init__(self, root):
-        """
-        Initialisiert das Spiel.
-        :param root: Das Hauptfenster für Tkinter-Oberfläche
-        """
         self.root = root
-        self.root.title("Tic-Tac-Toe")  # Titel des Fensters
-        self.size = 3  # Standardgröße des Spielfelds
-        self.board = []  # Das Spielfeld
-        self.players = []  # Liste der Spieler
-        self.current_player_index = 0  # Der aktuelle Spieler
-        self.records = "records.csv"  # Datei für Rekorde
-        self.timer_thread = None  # Der Timer für das Spiel
-        self.timer_running = False  # Gibt an, ob der Timer läuft
-        self.elapsed_time = 0  # Zeit, die vergangen ist
+        self.root.title("Tic-Tac-Toe")
+        self.size = 3
+        self.board = []
+        self.players = []
+        self.current_player_index = 0
+        self.records = "records.csv"
+        self.timer_thread = None
+        self.timer_running = False
+        self.elapsed_time = 0
 
-        # Überprüft, ob die Rekorddatei existiert, andernfalls wird sie erstellt
+        # Datei für Rekorde initialisieren
         try:
             if not os.path.exists(self.records):
                 with open(self.records, "w") as f:
@@ -51,12 +42,9 @@ class TicTacToe:
             messagebox.showerror("Fehler", f"Fehler beim Zugriff auf die Datei: {e}")
             return
 
-        self.init_ui()  # Benutzeroberfläche initialisieren
+        self.init_ui()
 
     def init_ui(self):
-        """
-        Erstellt die Benutzeroberfläche mit Tkinter-Widgets.
-        """
         self.menu_frame = tk.Frame(self.root)
         self.menu_frame.pack(pady=10)
         self.play_area_frame = tk.Frame(self.root)
@@ -64,7 +52,7 @@ class TicTacToe:
         self.controls_frame = tk.Frame(self.root)
         self.controls_frame.pack(pady=10)
 
-        # Eingabefelder für die Spielernamen
+        # Eingabefelder für Spielernamen
         tk.Label(self.menu_frame, text="Spieler 1:").grid(row=0, column=0)
         self.player1_entry = tk.Entry(self.menu_frame)
         self.player1_entry.grid(row=0, column=1)
@@ -78,7 +66,7 @@ class TicTacToe:
         self.size_var = tk.IntVar(value=3)
         tk.Spinbox(self.menu_frame, from_=3, to=15, increment=2, textvariable=self.size_var).grid(row=2, column=1)
 
-        # Startbutton für das Spiel
+        # Startbutton
         self.start_button = tk.Button(self.menu_frame, text="Neues Spiel starten", command=self.start_game)
         self.start_button.grid(row=3, columnspan=2, pady=10)
 
@@ -86,11 +74,16 @@ class TicTacToe:
         self.records_button = tk.Button(self.controls_frame, text="Rekordliste anzeigen", command=self.show_records)
         self.records_button.pack()
 
-        # Anzeige des aktuellen Spielers und der Zeit
+        # Anzeige des aktuellen Spielers und Zeit
         self.current_player_label = tk.Label(self.controls_frame, text="")
         self.current_player_label.pack()
         self.timer_label = tk.Label(self.controls_frame, text="Zeit: 0 Sekunden")
         self.timer_label.pack()
+
+    def generate_random_username(self):
+        letters = ''.join(random.choices(string.ascii_letters, k=5))
+        numbers = ''.join(random.choices(string.digits, k=random.randint(0, 3)))
+        return ''.join(random.sample(letters + numbers, len(letters + numbers)))
 
     def start_game(self):
         """
@@ -99,6 +92,12 @@ class TicTacToe:
         """
         player1_name = self.player1_entry.get()
         player2_name = self.player2_entry.get()
+
+        # Generiere zufällige Benutzernamen, wenn Eingaben leer sind
+        if not player1_name:
+            player1_name = self.generate_random_username()
+        if not player2_name:
+            player2_name = self.generate_random_username()
 
         # Benutzernamen validieren
         try:
@@ -110,9 +109,9 @@ class TicTacToe:
             self.log_error(str(e))
             messagebox.showerror("Ungültiger Benutzername", str(e))
             return
-        
+
         # Spieler und Spielfeldgröße festlegen
-        self.players = [player1_name or "Spieler1", player2_name or "Spieler2"]
+        self.players = [player1_name, player2_name]
         self.size = self.size_var.get()
         self.current_player_index = 0
         self.current_player_label.config(text=f"Am Zug: {self.players[self.current_player_index]}")
@@ -121,10 +120,8 @@ class TicTacToe:
         self.start_timer()  # Timer starten
         self.create_board()  # Spielfeld aufbauen
 
+
     def is_valid_username(self, username):
-        """
-        Überprüft, ob der Benutzername gültig ist (mindestens 5 Zeichen, maximal 3 Zahlen und keine Sonderzeichen).
-        """
         if len(username) < 5:
             return False
         if len(re.findall(r'\d', username)) > 3:
@@ -135,45 +132,33 @@ class TicTacToe:
         return True
 
     def create_board(self):
-        """
-        Erstellt das Spielfeld (mit Buttons) basierend auf der Größe.
-        """
         for widget in self.play_area_frame.winfo_children():
-            widget.destroy()  # Löscht vorherige Widgets
+            widget.destroy()
         for r in range(self.size):
             for c in range(self.size):
                 btn = tk.Button(self.play_area_frame, text="", width=4, height=2,
                                 command=lambda row=r, col=c: self.make_move(row, col))
                 btn.grid(row=r, column=c)
-                self.board[r][c] = btn  # Button zum Spielfeld hinzufügen
+                self.board[r][c] = btn
 
     def make_move(self, row, col):
-        """
-        Macht einen Zug und prüft, ob das Spiel beendet ist.
-        """
         if self.board[row][col].cget("text") == "":
             mark = "X" if self.current_player_index == 0 else "O"
             self.board[row][col].config(text=mark)
-            if self.check_winner(row, col, mark):  # Gewinnerprüfung
+            if self.check_winner(row, col, mark):
                 self.stop_timer()
-                self.save_board_to_file()
                 messagebox.showinfo("Spiel beendet", f"{self.players[self.current_player_index]} hat gewonnen!")
-                self.check_and_save_record(self.players[self.current_player_index], self.elapsed_time)
-                self.start_game()  # Neues Spiel starten
-            elif all(self.board[r][c].cget("text") != "" for r in range(self.size) for c in range(self.size)):  # Unentschieden
+                self.save_record(self.players[self.current_player_index], self.elapsed_time)
+                self.start_game()
+            elif all(self.board[r][c].cget("text") != "" for r in range(self.size) for c in range(self.size)):
                 self.stop_timer()
-                self.save_board_to_file()
                 messagebox.showinfo("Spiel beendet", "Unentschieden!")
                 self.start_game()
             else:
-                self.current_player_index = 1 - self.current_player_index  # Nächster Spieler
+                self.current_player_index = 1 - self.current_player_index
                 self.current_player_label.config(text=f"Am Zug: {self.players[self.current_player_index]}")
 
     def check_winner(self, row, col, mark):
-        """
-        Überprüft, ob Spieler gewonnen hat.
-        """
-        # Reihen, Spalten und Diagonalen prüfen
         if all(self.board[row][c].cget("text") == mark for c in range(self.size)):
             return True
         if all(self.board[r][col].cget("text") == mark for r in range(self.size)):
@@ -185,9 +170,6 @@ class TicTacToe:
         return False
 
     def show_records(self):
-        """
-        Zeigt die Rekordliste an.
-        """
         try:
             if not os.path.exists(self.records) or os.stat(self.records).st_size == 0:
                 messagebox.showinfo("Rekordliste", "Keine Einträge verfügbar.")
@@ -200,57 +182,29 @@ class TicTacToe:
             messagebox.showerror("Fehler", f"Fehler beim Laden der Rekordliste: {e}")
 
     def start_timer(self):
-        """
-        Startet den Timer
-        """
         self.timer_running = True
         self.timer_thread = threading.Thread(target=self.update_timer, daemon=True)
         self.timer_thread.start()
 
     def update_timer(self):
-        """
-        Aktualisiert jede Sekunde die angezeigte Spielzeit.
-        """
         while self.timer_running:
             time.sleep(1)
             self.elapsed_time += 1
             self.timer_label.config(text=f"Zeit: {self.elapsed_time} Sekunden")
 
     def stop_timer(self):
-        """
-        Stoppt den Timer.
-        """
         self.timer_running = False
 
-    def save_board_to_file(self):
-        """
-        Speichert das aktuelle Spielfeld in einer Textdatei.
-        """
+    def save_record(self, player, time_elapsed):
         try:
-            with open("board_state.txt", "w") as f:
-                for row in self.board:
-                    f.write(" ".join(cell.cget("text") if cell.cget("text") != "" else "_" for cell in row) + "\n")
-        except IOError as e:
-            self.log_error(f"Fehler beim Speichern des Spielfelds: {e}")
-            messagebox.showerror("Fehler", f"Fehler beim Speichern des Spielfelds: {e}")
-
-    def check_and_save_record(self, player, time_elapsed):
-        """
-        Speichert den Rekord in einer CSV-Datei.
-        """
-        try:
-            if time_elapsed > 0:  # Keine Rekorde für Unentschieden
+            if time_elapsed > 0:
                 with open(self.records, "a", newline="") as f:
                     writer = csv.writer(f)
                     writer.writerow([player, time_elapsed])
         except IOError as e:
             self.log_error(f"Fehler beim Speichern des Rekords: {e}")
-            messagebox.showerror(f"Fehler","Fehler beim Speichern des Rekords: {e}")
 
     def log_error(self, error_message):
-        """
-        Protokolliert Fehler in einer Logdatei.
-        """
         logging.error(error_message)
 
 
