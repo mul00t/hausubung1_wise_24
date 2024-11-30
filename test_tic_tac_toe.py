@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from tic_tac_toe import TicTacToe  # Stelle sicher, dass der Pfad korrekt ist
+from tic_tac_toe import TicTacToe
 
 class TestTicTacToe(unittest.TestCase):
 
