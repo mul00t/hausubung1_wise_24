@@ -31,7 +31,7 @@ class TicTacToe:
         self.timer_running = False
         self.elapsed_time = 0
 
-        # Datei für Rekorde initialisieren
+        # Datei für Rekorde initialisieren 
         try:
             if not os.path.exists(self.records):
                 with open(self.records, "w") as f:
@@ -93,7 +93,7 @@ class TicTacToe:
         player1_name = self.player1_entry.get()
         player2_name = self.player2_entry.get()
 
-        # Generiere zufällige Benutzernamen, wenn Eingaben leer sind
+        # Generiere zufällige Benutzernamen falls Eingaben leer sind
         if not player1_name:
             player1_name = self.generate_random_username()
         if not player2_name:
